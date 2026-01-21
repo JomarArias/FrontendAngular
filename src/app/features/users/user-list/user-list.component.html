@@ -1,0 +1,51 @@
+<div class="card p-5">
+    <div class="flex align-items-center justify-content-between mb-4">
+        <h1 class="text-3xl font-bold m-0">Gestión de Usuarios</h1>
+        <button 
+            pButton 
+            label="Nuevo Usuario" 
+            icon="pi pi-plus" 
+            class="p-button-success"
+            (click)="displayDialog = true">
+        </button>
+    </div>
+
+    <p-table [value]="user" [tableStyle]="{'min-width': '50rem'}" styleClass="p-datatable-striped shadow-2">
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="bg-blue-600 text-black">N</th>
+                <th class="bg-blue-600 text-black">Nombre</th>
+                <th class="bg-blue-600 text-black">Correo</th>
+                <th class="bg-blue-600 text-black">Teléfono</th>
+                <th class="bg-blue-600 text-black text-center">Estado</th>
+                <th class="bg-blue-600 text-black text-center">Acciones</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-user let-i="rowIndex">
+            <tr>
+                <td>{{i + 1}}</td>
+                <td>{{user.name}}</td>
+                <td>{{user.mail}}</td>
+                <td>{{user.phone}}</td>
+                <td class="text-center">
+                    <p-inputSwitch 
+                        [(ngModel)]="user.is_active" 
+                        (onChange)="toggleStatus(user)">
+                    </p-inputSwitch>
+                    <div class="text-sm mt-2">
+                        <span *ngIf="user.is_active" class="text-green-600 ">Activo</span>
+                        <span *ngIf="!user.is_active" class="text-red-600 ">Inactivo</span>
+                    </div>
+                </td>
+                <td class="text-center">
+                    <button 
+                        pButton 
+                        icon="pi pi-trash" 
+                        class="p-button-rounded p-button-danger p-button-text"
+                        (click)="confirmDelete(user.id)">
+                    </button>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
