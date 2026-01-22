@@ -10,14 +10,33 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { UserFormComponent } from '../user-form/user-form.component';
+import { MessagesModule } from 'primeng/messages';
+import { ToastModule } from 'primeng/toast';
+
+
 
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [CommonModule, TableModule, ButtonModule, TagModule, FormsModule, DialogModule, InputTextModule, InputSwitchModule, ConfirmDialogModule],
-  providers: [ConfirmationService],
+  imports: [
+    CommonModule,
+    TableModule,
+    ButtonModule,
+    TagModule,
+    FormsModule,
+    DialogModule,
+    InputTextModule,
+    InputSwitchModule,
+    ConfirmDialogModule,
+    MessagesModule,
+    UserFormComponent,
+    ToastModule
+],
+
+  providers: [ConfirmationService, MessageService],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.scss'
 })
@@ -25,20 +44,72 @@ export class UserListComponent implements OnInit{
   user: any[] = [];
   displayDialog: boolean = false;
   newUser = {name:'', mail:'', phone:'', is_active: 1};
-  constructor(private userService: UserService, private confirmationService: ConfirmationService) { }
+  selectedUser: any = null;
+
+  constructor(
+    private userService: UserService,
+     private confirmationService: ConfirmationService, 
+     private messageService: MessageService
+    ) { }
 
   ngOnInit(){
     this.loadUsers();
   } 
+   
+  openCreateUserDialog() {
+    this.displayDialog = true;
+    this.selectedUser = null;
+  }
+  openEditDialog(user: any) {
+    this.selectedUser = { ...user };
+    this.displayDialog = true;
+  }
+  onCancelForm() {
+    this.displayDialog = false;
+    this.selectedUser = null;
+  }
 
-  saveUser() {
-    this.userService.saveUser(this.newUser).subscribe(() => {
-      this.loadUsers();
-      this.displayDialog = false;
-      this.newUser = {name:'', mail:'', phone:'', is_active: 1};
+  saveUser(userData: any) {
+    if (userData.id) {
+      this.userService.updateUser(userData.id, userData).subscribe({
+        next: () => {
+          this.loadUsers();
+          this.displayDialog = false;
+          this.messageService.add({
+            severity: 'success', 
+            summary: 'Éxito', 
+            detail: 'Usuario actualizado exitosamente'
+          });
+        },
+        error: () => {
+          this.messageService.add({
+            severity: 'error', 
+            summary: 'Error', 
+            detail: 'Error al actualizar el usuario'
+        });
+      }
+      });
+    } else {
+        this.userService.saveUser(userData).subscribe({
+        next: () => {
+        this.loadUsers();
+        this.displayDialog = false;
+        this.messageService.add({
+          severity: 'success', 
+          summary: 'Éxito', 
+          detail: 'Usuario creado exitosamente'
+        });
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error', 
+          summary: 'Error', 
+          detail: 'Error al crear el usuario'
+        });
+      }
     });
   }
-  
+}
 
 toggleStatus(user: any) {
   
@@ -63,11 +134,18 @@ toggleStatus(user: any) {
 }
 
   loadUsers(){ 
-    this.userService.getUsers().subscribe(data => {
-      this.user = data.map(user => ({
+    this.userService.getUsers().subscribe({
+      next: (data) => this.user = data.map(user => ({
         ...user,
         is_active: user.is_active === 1 || user.is_active === true
-      }));
-    });
+      })),
+      error: () => {
+        this.messageService.add({
+        severity: 'error', 
+        summary: 'Error', 
+        detail: 'Error al cargar los usuarios'
+        })
+    }
+  });
   }
 }

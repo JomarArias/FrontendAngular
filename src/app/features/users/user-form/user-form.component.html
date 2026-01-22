@@ -1,0 +1,70 @@
+<p-dialog 
+  [(visible)]="visible"
+  (visibleChange)="visibleChange.emit($event)"
+  [header]="dialogTitle"
+  [modal]="true" 
+  [style]="{ width: '450px' }"
+  [draggable]="false"
+  [resizable]="false"
+  (onHide)="closeDialog()">
+  
+  <div class="flex flex-column gap-3">
+    <div class="flex flex-column gap-2">
+      <label for="name" class="font-semibold">Nombre</label>
+      <input 
+        pInputText 
+        id="name" 
+        [(ngModel)]="userForm.name" 
+        placeholder="Ingrese el nombre"
+        class="w-full"
+        required />
+    </div>
+    
+    <div class="flex flex-column gap-2">
+      <label for="mail" class="font-semibold">Email</label>
+      <input 
+        pInputText 
+        id="mail" 
+        type="email"
+        [(ngModel)]="userForm.mail" 
+        placeholder="Ingrese el email"
+        class="w-full"
+        required />
+    </div>
+    
+    <div class="flex flex-column gap-2">
+      <label for="phone" class="font-semibold">Teléfono</label>
+      <input 
+        pInputText 
+        id="phone" 
+        [(ngModel)]="userForm.phone" 
+        placeholder="Ingrese el teléfono"
+        class="w-full" />
+    </div>
+    
+    <div class="flex align-items-center gap-3">
+      <label for="is_active" class="font-semibold">Estado</label>
+      <p-inputSwitch 
+        id="is_active" 
+        [(ngModel)]="userForm.is_active">
+      </p-inputSwitch>
+      <span class="text-sm">{{ userForm.is_active ? 'Activo' : 'Inactivo' }}</span>
+    </div>
+  </div>
+  
+  <ng-template pTemplate="footer">
+    <p-button 
+      label="Cancelar" 
+      icon="pi pi-times" 
+      [text]="true"
+      severity="secondary"
+      (onClick)="cancel()">
+    </p-button>
+    <p-button 
+      [label]="saveButtonLabel" 
+      icon="pi pi-check"
+      (onClick)="save()"
+      [disabled]="!userForm.name || !userForm.mail">
+    </p-button>
+  </ng-template>
+</p-dialog>

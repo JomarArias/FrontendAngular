@@ -6,7 +6,7 @@
             label="Nuevo Usuario" 
             icon="pi pi-plus" 
             class="p-button-success"
-            (click)="displayDialog = true">
+            (click)="openCreateUserDialog()">
         </button>
     </div>
 
@@ -42,6 +42,7 @@
                         pButton 
                         icon="pi pi-pencil" 
                         class="p-button-rounded p-button-warning p-button-text"
+                        (click)="openEditDialog(user)">
                         >
                     </button>
                 </td>
@@ -50,4 +51,13 @@
     </p-table>
 </div>
 
+<app-user-form
+    [(visible)]="displayDialog"
+    [userData]="selectedUser"
+    (onSave)="saveUser($event)"
+    (onCancel)="onCancelForm()">
+</app-user-form>
+
+
 <p-confirmDialog></p-confirmDialog>
+<p-toast></p-toast>
