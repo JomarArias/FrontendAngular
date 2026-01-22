@@ -9,12 +9,15 @@ import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputSwitchModule } from 'primeng/inputswitch';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [CommonModule, TableModule, ButtonModule, TagModule, FormsModule, DialogModule, InputTextModule, InputSwitchModule],
+  imports: [CommonModule, TableModule, ButtonModule, TagModule, FormsModule, DialogModule, InputTextModule, InputSwitchModule, ConfirmDialogModule],
+  providers: [ConfirmationService],
   templateUrl: './user-list.component.html',
   styleUrl: './user-list.component.scss'
 })
@@ -22,11 +25,11 @@ export class UserListComponent implements OnInit{
   user: any[] = [];
   displayDialog: boolean = false;
   newUser = {name:'', mail:'', phone:'', is_active: 1};
-  constructor(private userService: UserService) { }
+  constructor(private userService: UserService, private confirmationService: ConfirmationService) { }
 
   ngOnInit(){
     this.loadUsers();
-  }
+  } 
 
   saveUser() {
     this.userService.saveUser(this.newUser).subscribe(() => {
@@ -38,21 +41,23 @@ export class UserListComponent implements OnInit{
   
 
 toggleStatus(user: any) {
-  console.log('Toggle Status llamado para:', user);
   
-  const previousStatus = user.is_active;
-  
-  user.is_active = !user.is_active;
-  console.log('Nuevo estado:', user.is_active);
-  
-  this.userService.toggleUserStatus(user.id, user.is_active ? 1 : 0).subscribe({
-    next: (res) => {
-      console.log('Respuesta del servidor:', res);
-      console.log('Estado actualizado a:', user.is_active);
+  const statusText = user.is_active ? 'inactivo' : 'activo';
+  const newStatus = !user.is_active;
+    
+  this.confirmationService.confirm({
+    message: `¿Estás seguro de que deseas cambiar el estado del usuario ${user.name} a ${statusText}?`,
+    header: 'Confirmar cambio',
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Sí',
+    rejectLabel: 'No',
+    accept: () => {
+      this.userService.toggleUserStatus(user.id, newStatus ? 1 : 0).subscribe(() => {
+        user.is_active = newStatus;
+      });
     },
-    error: (err) => {
-      console.error('Error al cambiar estado:', err);
-      user.is_active = previousStatus;
+    reject: () => {
+      user.is_active = !newStatus;
     }
   });
 }
@@ -65,12 +70,4 @@ toggleStatus(user: any) {
       }));
     });
   }
-
-  confirmDelete(id: number) {
-    this.userService.delateUser(id).subscribe(
-      () => {
-        this.loadUsers();
-      },
-  )
-}
 }
